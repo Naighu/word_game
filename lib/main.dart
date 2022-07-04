@@ -1,64 +1,36 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
-import 'package:path_drawing/path_drawing.dart';
+import 'package:get/get.dart';
+import 'package:hive/hive.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:word_game/home_page.dart';
+import 'package:word_game/login_screen/login_screen_layout.dart';
+import 'package:word_game/login_screen/user.dart';
+
+import 'constants.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
-  runApp(MyApp());
+  final path = await getApplicationDocumentsDirectory();
+  Hive.init(path.path);
+  Hive.registerAdapter(UserAdapter());
+  await Hive.openBox(USERBOX);
+
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
+    User? user;
+    try {
+      user = Hive.box<User>(USERBOX).getAt(0);
+    } catch (e) {}
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        body: Center(
-          child: Container(
-            width: 300,
-            height: 300,
-            color: Colors.yellow,
-            child: CustomPaint(painter: FaceOutlinePainter()),
-          ),
-        ),
-      ),
-    );
+        debugShowCheckedModeBanner: false,
+        home: user != null ? const HomePage() : const LoginScreen());
   }
-}
-
-class FaceOutlinePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    Paint paint = Paint()
-      ..color = Colors.green
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 4.0;
-
-    Path path = Path();
-    path.moveTo(0, size.height); //Ax, Ay
-
-    path.cubicTo(
-        size.width * 0.497,
-        size.height * 0.847,
-        size.width * 0.202,
-        size.height * 0.4,
-        size.width * 0.609,
-        size.height * 0.256); //Bx, By, Cx, Cy
-    canvas.drawPath(
-        dashPath(path, dashArray: CircularIntervalList([15.0, 10.5])), paint);
-    path.moveTo(0, size.height); //Ax, Ay
-    path.cubicTo(
-        size.width * 0.667,
-        size.height * 0.998,
-        size.width * 0.493,
-        size.height * 0.38,
-        size.width * 0.8,
-        size.height * 0.3); //Bx, By, Cx, Cy
-
-    canvas.drawPath(
-        dashPath(path, dashArray: CircularIntervalList([15.0, 10.5])), paint);
-  }
-
-  @override
-  bool shouldRepaint(FaceOutlinePainter oldDelegate) => false;
 }

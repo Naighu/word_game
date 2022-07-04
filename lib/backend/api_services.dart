@@ -22,7 +22,7 @@ class ApiServices {
     }
 
     return http.post(Uri.parse(url),
-        headers: {"Content-Type": "application/json", "api-key": _apiKey},
+        headers: {"Content-Type": "application/json", "api-key": _apiKey!},
         body: json.encode(body));
   }
 

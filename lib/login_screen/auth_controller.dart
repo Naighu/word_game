@@ -7,6 +7,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:word_game/backend/api_services.dart';
 import 'package:word_game/home_page.dart';
 
+import '../constants.dart';
 import 'user.dart';
 
 class AuthController extends GetxController {
@@ -37,7 +38,7 @@ class AuthController extends GetxController {
       final api = Get.find<ApiServices>();
       final user = await api.login(email, password);
       if (user != null) {
-        Box box = Get.find<Box<User>>();
+        Box box = await Hive.openBox(USERBOX);
 
         box.put(0, user);
         Fluttertoast.showToast(
